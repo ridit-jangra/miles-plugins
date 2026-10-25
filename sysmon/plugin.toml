@@ -3,3 +3,6 @@ description = "System status and alerts for low battery, full disk, high tempera
 
 [dependencies]
 python = ["psutil>=5.9"]
+
+[miles]
+tools = false

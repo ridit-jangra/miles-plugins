@@ -1,2 +1,5 @@
 name = "journal"
 description = "A voice journal and habit log"
+
+[miles]
+tools = ["log_entry", "log_habit", "delete_entry"]

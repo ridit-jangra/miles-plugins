@@ -3,3 +3,6 @@ description = "Wikipedia summaries, word definitions and translation"
 
 [permissions]
 network = true
+
+[miles]
+tools = false

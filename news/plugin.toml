@@ -3,3 +3,6 @@ description = "A few recent headlines from your feeds"
 
 [permissions]
 network = true
+
+[miles]
+tools = false

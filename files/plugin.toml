@@ -3,3 +3,6 @@ description = "Find, open and trash files in your own folders"
 
 [dependencies]
 python = ["send2trash>=1.8"]
+
+[miles]
+tools = ["open_file", "trash_file"]
