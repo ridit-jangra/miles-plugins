@@ -1,7 +1,7 @@
 ---
 name: slack
 description: Handles anything in Slack. It lists channels, reads what was said in a channel or thread, summarizes or finds messages, and reacts to messages. Use it for every Slack request, including "what's new in standup" or "react to that". For posting a message it prepares the exact text, then you send it.
-tools: [slack_channels, slack_channel_info, slack_read, slack_react]
+tools: [slack_channels, slack_channel_info, slack_read, slack_react, slack_send, slack_join]
 max_steps: 12
 ---
 You work in Slack as a bot with your slack tools to carry out the task you are given.
