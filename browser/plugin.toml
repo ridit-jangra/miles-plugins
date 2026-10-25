@@ -1,5 +1,5 @@
 name = "browser"
-description = "Drive a Chrome window with Playwright to read and use websites"
+description = "Drive one long-lived Chrome window with Playwright to read and use websites"
 
 [permissions]
 network = true
@@ -12,11 +12,9 @@ tools = ["open_url"]
 command = "bunx"
 args = [
   "@playwright/mcp@0.0.83",
-  "--browser", "chrome",
-  "--user-data-dir", "~/.miles/browser-profile",
+  "--cdp-endpoint", "http://127.0.0.1:9333",
   "--output-dir", "~/.miles/data/browser",
   "--image-responses", "omit",
-  "--idle-timeout", "600000",
 ]
 tools = [
   "browser_navigate",
@@ -32,5 +30,4 @@ tools = [
   "browser_tabs",
   "browser_wait_for",
   "browser_handle_dialog",
-  "browser_close",
 ]
