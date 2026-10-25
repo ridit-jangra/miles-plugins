@@ -1,0 +1,36 @@
+name = "browser"
+description = "Drive a Chrome window with Playwright to read and use websites"
+
+[permissions]
+network = true
+shell = true
+
+[miles]
+tools = ["open_url"]
+
+[mcp.playwright]
+command = "bunx"
+args = [
+  "@playwright/mcp@0.0.83",
+  "--browser", "chrome",
+  "--user-data-dir", "~/.miles/browser-profile",
+  "--output-dir", "~/.miles/data/browser",
+  "--image-responses", "omit",
+  "--idle-timeout", "600000",
+]
+tools = [
+  "browser_navigate",
+  "browser_navigate_back",
+  "browser_snapshot",
+  "browser_find",
+  "browser_click",
+  "browser_type",
+  "browser_fill_form",
+  "browser_press_key",
+  "browser_select_option",
+  "browser_hover",
+  "browser_tabs",
+  "browser_wait_for",
+  "browser_handle_dialog",
+  "browser_close",
+]
