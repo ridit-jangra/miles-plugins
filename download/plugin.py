@@ -24,8 +24,8 @@ RISKY = {
 
 
 def miles_home() -> Path:
-    plugins = Path(os.environ.get("MILES_PLUGINS_DIR") or Path.home() / ".miles" / "plugins")
-    return plugins.parent
+    home = Path(os.environ.get("MILES_HOME") or Path.home() / ".miles")
+    return home
 
 
 def is_public(host: str) -> bool:

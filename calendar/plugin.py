@@ -14,8 +14,8 @@ CLOCK = re.compile(r"\s*(\d{1,2})(?::(\d{2}))?\s*([ap])?\.?m?\.?\s*")
 
 
 def data_file() -> Path:
-    plugins = Path(os.environ.get("MILES_PLUGINS_DIR") or Path.home() / ".miles" / "plugins")
-    return plugins.parent / "data" / "calendar.json"
+    home = Path(os.environ.get("MILES_HOME") or Path.home() / ".miles")
+    return home / "data" / "calendar.json"
 
 
 def parse_day(text: str) -> date | None:

@@ -8,8 +8,8 @@ from miles.context import SECRET_PATTERN
 
 
 def data_file() -> Path:
-    plugins = Path(os.environ.get("MILES_PLUGINS_DIR") or Path.home() / ".miles" / "plugins")
-    return plugins.parent / "data" / "journal.json"
+    home = Path(os.environ.get("MILES_HOME") or Path.home() / ".miles")
+    return home / "data" / "journal.json"
 
 
 def spoken_day(day: date) -> str:

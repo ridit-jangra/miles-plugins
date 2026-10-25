@@ -25,8 +25,8 @@ WINDOWS_SHOT = (
 
 
 def data_dir() -> Path:
-    plugins = Path(os.environ.get("MILES_PLUGINS_DIR") or Path.home() / ".miles" / "plugins")
-    return plugins.parent / "data" / "clip"
+    home = Path(os.environ.get("MILES_HOME") or Path.home() / ".miles")
+    return home / "data" / "clip"
 
 
 def stamp() -> str:

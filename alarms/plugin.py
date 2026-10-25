@@ -13,8 +13,8 @@ WORDS = {"noon": (12, 0), "midnight": (0, 0)}
 
 
 def data_file() -> Path:
-    plugins = Path(os.environ.get("MILES_PLUGINS_DIR") or Path.home() / ".miles" / "plugins")
-    return plugins.parent / "data" / "alarms.json"
+    home = Path(os.environ.get("MILES_HOME") or Path.home() / ".miles")
+    return home / "data" / "alarms.json"
 
 
 def parse_clock(text: str) -> tuple[int, int] | None:

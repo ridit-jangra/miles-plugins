@@ -9,8 +9,8 @@ from miles.watchers.inbox import Alert
 
 
 def data_file() -> Path:
-    plugins = Path(os.environ.get("MILES_PLUGINS_DIR") or Path.home() / ".miles" / "plugins")
-    return plugins.parent / "data" / "focus.json"
+    home = Path(os.environ.get("MILES_HOME") or Path.home() / ".miles")
+    return home / "data" / "focus.json"
 
 
 def clock(stamp: float) -> str:

@@ -13,7 +13,7 @@ command = "bunx"
 args = [
   "@playwright/mcp@0.0.83",
   "--cdp-endpoint", "http://127.0.0.1:9333",
-  "--output-dir", "~/.miles/data/browser",
+  "--output-dir", "$MILES_HOME/data/browser",
   "--image-responses", "omit",
 ]
 tools = [
