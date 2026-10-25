@@ -1,0 +1,8 @@
+name = "slack"
+description = "Read your Slack channels, send messages and react, as a bot"
+
+[permissions]
+network = true
+
+[miles]
+tools = ["slack_channels", "slack_read", "slack_send", "slack_react", "slack_join"]
