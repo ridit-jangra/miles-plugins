@@ -1,3 +1,4 @@
+import asyncio
 import os
 import subprocess
 import sys
@@ -82,15 +83,7 @@ def register(api):
             return None, {"error": "That file doesn't exist."}
         return target, None
 
-    @api.tool
-    def find_files(query: str, folder: str = "", limit: int = 8) -> dict:
-        """Find files by name, newest first. Every word in the query has to appear in the file name.
-
-        Args:
-            query: Words from the name, like "tax pdf" or "resume".
-            folder: Optional folder name to look in, like "Downloads". Leave empty to search everywhere.
-            limit: Max number of files to return.
-        """
+    def find_sync(query: str, folder: str, limit: int) -> dict:
         words = [w for w in query.lower().split() if w]
         if not words:
             return {"error": "What should I look for?"}
@@ -113,15 +106,7 @@ def register(api):
             files.append(describe(path, path.stat()))
         return {"files": files, "searched_fully": time.time() <= deadline} if files else {"error": f"No file matching {query!r}."}
 
-    @api.tool
-    def recent_files(days: int = 7, folder: str = "", limit: int = 8) -> dict:
-        """List the files changed in the last few days, newest first.
-
-        Args:
-            days: How far back to look.
-            folder: Optional folder name like "Downloads". Leave empty for all folders.
-            limit: Max number of files to return.
-        """
+    def recent_sync(days: int, folder: str, limit: int) -> dict:
         cutoff = time.time() - max(1, days) * 86400
         deadline = time.time() + SEARCH_SECONDS
         found = []
@@ -137,6 +122,28 @@ def register(api):
         found.sort(key=lambda item: item[0], reverse=True)
         files = [describe(path, stat) for _, path, stat in found[: max(1, min(limit, 20))]]
         return {"files": files} if files else {"error": "No files changed in that time."}
+
+    @api.tool
+    async def find_files(query: str, folder: str = "", limit: int = 8) -> dict:
+        """Find files by name, newest first. Every word in the query has to appear in the file name.
+
+        Args:
+            query: Words from the name, like "tax pdf" or "resume".
+            folder: Optional folder name to look in, like "Downloads". Leave empty to search everywhere.
+            limit: Max number of files to return.
+        """
+        return await asyncio.to_thread(find_sync, query, folder, limit)
+
+    @api.tool
+    async def recent_files(days: int = 7, folder: str = "", limit: int = 8) -> dict:
+        """List the files changed in the last few days, newest first.
+
+        Args:
+            days: How far back to look.
+            folder: Optional folder name like "Downloads". Leave empty for all folders.
+            limit: Max number of files to return.
+        """
+        return await asyncio.to_thread(recent_sync, days, folder, limit)
 
     @api.tool
     def open_file(path: str) -> dict:

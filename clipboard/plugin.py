@@ -1,3 +1,4 @@
+import asyncio
 import os
 import shutil
 import subprocess
@@ -28,13 +29,13 @@ def commands() -> tuple[list[str], list[str]] | None:
 
 def register(api):
     @api.tool
-    def read_clipboard() -> dict:
+    async def read_clipboard() -> dict:
         """Read the text the user last copied. Use it for "what did I copy" or "read my clipboard"."""
         found = commands()
         if not found:
             return {"error": HINT}
         try:
-            result = subprocess.run(found[0], capture_output=True, text=True, timeout=5, check=False)
+            result = await asyncio.to_thread(subprocess.run, found[0], capture_output=True, text=True, timeout=5, check=False)
         except (OSError, subprocess.TimeoutExpired) as e:
             return {"error": f"Couldn't read the clipboard: {e}"}
         text = result.stdout.strip()
@@ -46,7 +47,7 @@ def register(api):
         return {"text": text[:LIMIT], "truncated": clipped, "characters": len(text)}
 
     @api.tool
-    def copy_to_clipboard(text: str) -> dict:
+    async def copy_to_clipboard(text: str) -> dict:
         """Put text on the user's clipboard so they can paste it.
 
         Args:
@@ -58,8 +59,8 @@ def register(api):
         if not text:
             return {"error": "There was no text to copy."}
         try:
-            subprocess.run(
-                found[1], input=text, text=True, timeout=5, check=False,
+            await asyncio.to_thread(
+                subprocess.run, found[1], input=text, text=True, timeout=5, check=False,
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
             )
         except (OSError, subprocess.TimeoutExpired) as e:

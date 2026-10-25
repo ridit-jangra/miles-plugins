@@ -1,3 +1,4 @@
+import asyncio
 import shutil
 import time
 from pathlib import Path
@@ -61,9 +62,9 @@ def register(api):
         return True
 
     @api.tool
-    def system_status() -> dict:
+    async def system_status() -> dict:
         """Report how the computer is doing: CPU and memory use, free disk space, battery, temperature and uptime."""
-        return snapshot()
+        return await asyncio.to_thread(snapshot)
 
     @api.watch(every="1m", first_run="after")
     def check() -> list[Alert]:
