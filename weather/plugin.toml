@@ -1,0 +1,5 @@
+name = "weather"
+description = "Current weather and forecast"
+
+[permissions]
+network = true
