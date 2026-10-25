@@ -1,0 +1,5 @@
+name = "files"
+description = "Find, open and trash files in your own folders"
+
+[dependencies]
+python = ["send2trash>=1.8"]
