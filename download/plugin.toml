@@ -1,0 +1,5 @@
+name = "download"
+description = "Download files from a web address into a Miles folder"
+
+[permissions]
+network = true
