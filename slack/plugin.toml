@@ -5,4 +5,4 @@ description = "Read your Slack channels, send messages and react, as a bot"
 network = true
 
 [miles]
-tools = ["slack_channels", "slack_read", "slack_send", "slack_react", "slack_join"]
+tools = ["slack_send", "slack_join"]

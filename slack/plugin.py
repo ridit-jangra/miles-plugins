@@ -1,3 +1,4 @@
+import asyncio
 import os
 import re
 import time
@@ -13,6 +14,7 @@ CHANNEL_ID = re.compile(r"^[CGD][A-Z0-9]{8,}$")
 
 def register(api):
     token_name = str(api.config.get("token_env", "SLACK_BOT_TOKEN"))
+    aliases = {str(k).lstrip("#").lower(): str(v) for k, v in (api.config.get("channels") or {}).items()}
     channels: dict[str, dict] = {}
     names: dict[str, str] = {}
     loaded = 0.0
@@ -22,13 +24,24 @@ def register(api):
         if not token:
             return {"ok": False, "error": f"No Slack token. Put {token_name}=xoxb-... in ~/.miles/.env."}
         clean = {k: v for k, v in params.items() if v is not None}
-        try:
-            async with httpx.AsyncClient(timeout=20, headers={"Authorization": f"Bearer {token}"}) as client:
-                r = await client.post(API + method, data=clean)
-                r.raise_for_status()
-        except httpx.HTTPError as e:
-            return {"ok": False, "error": f"Couldn't reach Slack: {e}"}
-        return r.json()
+        for attempt in range(2):
+            try:
+                async with httpx.AsyncClient(timeout=20, headers={"Authorization": f"Bearer {token}"}) as client:
+                    r = await client.post(API + method, data=clean)
+                    if r.status_code == 429:
+                        wait = int(r.headers.get("Retry-After", "30"))
+                        if attempt == 0 and wait <= 5:
+                            await asyncio.sleep(wait)
+                            continue
+                        return {"ok": False, "error": f"Slack says too many requests, try again in {wait} seconds."}
+                    r.raise_for_status()
+            except httpx.HTTPError as e:
+                return {"ok": False, "error": f"Couldn't reach Slack: {e}"}
+            return r.json()
+        return {"ok": False, "error": "Slack rate limit"}
+
+    def summarize(c: dict) -> dict:
+        return {"id": c["id"], "name": c.get("name", c["id"]), "private": c.get("is_private", False), "member": c.get("is_member", False), "members": c.get("num_members")}
 
     async def load_channels(force: bool = False) -> str | None:
         nonlocal loaded
@@ -47,7 +60,7 @@ def register(api):
             if not data.get("ok"):
                 return data.get("error", "unknown error")
             for c in data["channels"]:
-                found[c["id"]] = {"id": c["id"], "name": c["name"], "private": c.get("is_private", False), "member": c.get("is_member", False)}
+                found[c["id"]] = summarize(c)
             cursor = (data.get("response_metadata") or {}).get("next_cursor")
             if not cursor:
                 break
@@ -58,8 +71,14 @@ def register(api):
 
     async def find(channel: str) -> dict | str:
         channel = channel.strip().lstrip("#")
+        channel = aliases.get(channel.lower(), channel)
         if CHANNEL_ID.match(channel):
-            return channels.get(channel) or {"id": channel, "name": channel, "private": False, "member": None}
+            if channel not in channels:
+                data = await call("conversations.info", channel=channel, include_num_members="true")
+                if not data.get("ok"):
+                    return data.get("error", "unknown error")
+                channels[channel] = summarize(data["channel"])
+            return channels[channel]
         error = await load_channels()
         if error:
             return error
@@ -82,16 +101,36 @@ def register(api):
         return names[user_id]
 
     @api.tool
-    async def slack_channels() -> dict:
-        """List the Slack channels the bot can see: every public channel and the private ones it was invited to.
+    async def slack_channels(query: str = "", joined_only: bool = False) -> dict:
+        """List Slack channels the bot can see: public channels and the private ones it was invited to.
 
-        Use when the user asks which channels exist or where the bot is. "member" says whether the bot is in the channel; it can only read channels it is in, and slack_join adds it to a public one.
+        Use when the user asks which channels exist or where the bot is. "member" says whether the bot is in the channel; it can only read channels it is in, and slack_join adds it to a public one. "members" is how many people are in it. For one channel whose id you have, call slack_channel_info instead, because this lists the whole workspace and Slack limits how often that is allowed.
+
+        Args:
+            query: Only channels whose name contains this.
+            joined_only: Only channels the bot is in.
         """
         error = await load_channels(force=True)
         if error:
             return {"error": error}
-        rows = sorted(channels.values(), key=lambda c: (not c["member"], c["name"]))
-        return {"channels": [{"name": c["name"], "private": c["private"], "member": c["member"]} for c in rows]}
+        rows = [c for c in channels.values() if query.lower() in c["name"].lower() and (c["member"] or not joined_only)]
+        rows.sort(key=lambda c: (not c["member"], c["name"]))
+        out = [{"name": c["name"], "id": c["id"], "private": c["private"], "member": c["member"], "members": c["members"]} for c in rows[:40]]
+        return {"channels": out, "total": len(rows)}
+
+    @api.tool
+    async def slack_channel_info(channel: str) -> dict:
+        """Get one Slack channel's details: whether the bot is in it, whether it is private and how many members it has.
+
+        Use for questions about a single channel, like how many people are in it. Works with a name or an id, and an id is quickest.
+
+        Args:
+            channel: The channel name or id.
+        """
+        found = await find(channel)
+        if isinstance(found, str):
+            return {"error": found}
+        return {"name": found["name"], "id": found["id"], "private": found["private"], "bot_is_member": found["member"], "members": found["members"]}
 
     @api.tool
     async def slack_read(channel: str, limit: int = 10) -> dict:
