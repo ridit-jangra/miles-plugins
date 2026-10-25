@@ -1,0 +1,5 @@
+name = "wiki"
+description = "Wikipedia summaries, word definitions and translation"
+
+[permissions]
+network = true
