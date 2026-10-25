@@ -1,0 +1,2 @@
+name = "screen"
+description = "Look at the screen: read its text with OCR or describe it with a local vision model"
