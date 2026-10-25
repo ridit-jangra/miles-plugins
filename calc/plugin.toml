@@ -1,0 +1,5 @@
+name = "calc"
+description = "Calculator, unit conversion and currency conversion"
+
+[permissions]
+network = true
