@@ -1,0 +1,5 @@
+name = "calendar"
+description = "Today's date, upcoming holidays and your own events"
+
+[dependencies]
+python = ["holidays>=0.50"]
