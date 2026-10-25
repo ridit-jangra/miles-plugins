@@ -1,0 +1,5 @@
+name = "sysmon"
+description = "System status and alerts for low battery, full disk, high temperature and memory"
+
+[dependencies]
+python = ["psutil>=5.9"]
